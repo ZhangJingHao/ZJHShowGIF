@@ -78,7 +78,7 @@ iOS 显示动态图、GIF图方法总结。详情链接：http://www.jianshu.com
 
 ```
 
-方式二、sd_setImageWithURL下载，回调的时候不用image，去直接读cache。(首先要了解sd_setImageWithURL里的内部逻辑，下载完之后先入cache，再执行block，这才保证外面可以直接读取到)，取出来的就是NSData
+方式二、sd_setImageWithURL下载，回调的时候不用image，去直接读cache。(首先要了解sd_setImageWithURL里的内部逻辑，下载完之后先入cache，再执行block，这才保证外面可以直接读取到)，取出来的就是NSData。首次下载成功时，可能获取data失败，因为这次图片可能还没存储成功，有延迟。
 
 ```
     // 方法二 sd_setImageWithURL下载
