@@ -131,30 +131,41 @@
     SDWebImageDownloaderOptions options = 0;
     UIImageView *imageView = self.viewArr[3];
     
-    // 方法一 SDWebImageDownloader下载
-//    SDWebImageDownloader *downloader = [SDWebImageDownloader sharedDownloader];
-//    [downloader downloadImageWithURL:imgeUrl
-//                             options:options
-//                            progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
-//
-//                            } completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, BOOL finished) {
-//                                imageView.image = [UIImage sd_animatedGIFWithData:data];
-//                            }];
+//     方法一 SDWebImageDownloader下载
+    SDImageCache *imageCache = [SDWebImageManager sharedManager].imageCache;
+    NSString *imagePath = [imageCache defaultCachePathForKey:imgeUrl.absoluteString];
+    NSData *imageData = [NSData dataWithContentsOfFile:imagePath];
+    if (imageData) {
+        imageView.image = [UIImage sd_animatedGIFWithData:imageData];
+        return ;
+    }
+    SDWebImageDownloader *downloader = [SDWebImageDownloader sharedDownloader];
+    [downloader downloadImageWithURL:imgeUrl
+                             options:options
+                            progress:nil
+                           completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, BOOL finished) {
+                               [imageCache storeImage:image
+                                            imageData:data
+                                               forKey:imgeUrl.absoluteString
+                                               toDisk:YES
+                                           completion:nil];
+                               imageView.image = [UIImage sd_animatedGIFWithData:data];
+                            }];
     
     // 方法二 sd_setImageWithURL下载
-    SDWebImageOptions opt = SDWebImageRetryFailed | SDWebImageAvoidAutoSetImage;
-    [imageView sd_setImageWithURL:imgeUrl
-                 placeholderImage:nil
-                          options:opt
-                        completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
-                            
-                            if (image.images && image.images.count) {
-                                NSString *path = [[SDImageCache sharedImageCache] defaultCachePathForKey:imageURL.absoluteString];
-                                NSData *data = [NSData dataWithContentsOfFile:path];
-                                UIImage *gifImage = [UIImage sd_animatedGIFWithData:data];
-                                imageView.image = gifImage;
-                            }
-                        }];
+//    SDWebImageOptions opt = SDWebImageRetryFailed | SDWebImageAvoidAutoSetImage;
+//    [imageView sd_setImageWithURL:imgeUrl
+//                 placeholderImage:nil
+//                          options:opt
+//                        completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+//
+//                            if (image.images && image.images.count) {
+//                                NSString *path = [[SDImageCache sharedImageCache] defaultCachePathForKey:imageURL.absoluteString];
+//                                NSData *data = [NSData dataWithContentsOfFile:path];
+//                                UIImage *gifImage = [UIImage sd_animatedGIFWithData:data];
+//                                imageView.image = gifImage;
+//                            }
+//                        }];
 }
 
 // 5、FLAnimatedImage使用
